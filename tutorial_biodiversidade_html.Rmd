@@ -49,7 +49,7 @@ dados_aranhas <- read.csv("bd_aranhas.csv",
                           header = TRUE)
 ```  
 
-Podemos visualizar os dados brevemente, utilizando o comando head(dados_aranhas), ou através do painel Environment localizado no canto superior direito da tela.  
+Podemos visualizar os dados brevemente, utilizando a função ``head(dados_aranhas)``, ou através do painel Environment localizado no canto superior direito da tela.  
 
 ```{r echo= TRUE}
 head(dados_aranhas)
@@ -59,7 +59,7 @@ Observe mais uma vez que neste banco de dados, as colunas representam espécies 
 
 # Índices de Diversidade e Equitabilidade  
 
-Antes de calcular os índices de diversidade no R, primeiro devemos descobrir a riqueza e riqueza total das espécies de nossos dados. Para isso utilizaremos a função **specnumber** da biblioteca **vegan** e a função **colSums** pertencente a biblioteca base do R.  
+Antes de calcular os índices de diversidade no R, primeiro devemos descobrir a riqueza e riqueza total das espécies de nossos dados. Para isso utilizaremos a função **specnumber()** da biblioteca **vegan** e a função **colSums** pertencente a biblioteca base do R.  
 
 ```{r, message= FALSE, warning= FALSE}
 
