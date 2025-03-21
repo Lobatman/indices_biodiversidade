@@ -1,0 +1,242 @@
+---
+title: "Como calcular Índices de Biodiversidade"
+author: "Victor Lobato dos Santos"
+output:
+  html_document:
+    highlight: haddock
+    theme: flatly
+    number_sections: yes
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+---
+<div class="text-justify">
+
+
+# Bibliotecas utilizadas
+
+```{r message=FALSE, warning=FALSE}
+library(vegan)
+library(tidyverse)
+library(forcats)
+library(iNEXT)
+library(ggplot2)
+```
+
+# Como preparar seus dados  
+
+O primeiro passo para se calcular índices de biodiversidade, é preparar os dados a serem utilizados. Existem diferentes formas de se preparar os dados para calcular índices de diversidade, aqui, utilizaremos uma forma simples e prática.  
+
+* Em sua planilha (excel, google planilhas, etc) certifique-se de que a primeira linha se refere as espécies ou morfoespécies observadas (EX: sp1, sp2, sp3…).  
+
+* As linhas abaixo, deverão corresponder ao número de indivíduos correspondentes a cada espécie e campanha (1, 0 , 5, 3…)  
+
+* •	Após o preparo, salve sua tabela em formato **CSV Delimitado por vírgula**.   
+
+O próximo passo é importar a tabela para o Rstúdio. Utilizaremos como exemplo um banco de dados fictício de 20 espécies diferentes de aranhas, coletadas em duas campanhas (amostras) diferentes, sendo a primeira campanha de uma estação chuvosa e a segunda de uma estação seca. Daremos o nome ao nosso banco de dados de bd_aranhas.csv  
+
+Antes de importar seus dados, certifique-se de que seu ambiente de trabalho no RStúdio está utilizando o diretório correto. Você pode selecionar o diretório utilizando o atalho *CTRL + SHIFT + H*.  
+
+Utilizaremos o seguinte código:  
+
+```{r message=FALSE, warning=FALSE}
+
+dados_aranhas <- read.csv("bd_aranhas.csv", 
+                          sep = ";", 
+                          header = TRUE)
+```  
+
+Podemos visualizar os dados brevemente, utilizando o comando head(dados_aranhas), ou através do painel Environment localizado no canto superior direito da tela.  
+
+```{r echo= TRUE}
+head(dados_aranhas)
+```  
+
+Observe mais uma vez que neste banco de dados, as colunas representam espécies (sp) enquanto que as linhas representam as campanhas / amostragens.  
+
+# Índices de Diversidade e Equitabilidade  
+
+Antes de calcular os índices de diversidade no R, primeiro devemos descobrir a riqueza e riqueza total das espécies de nossos dados. Para isso utilizaremos a função **specnumber** da biblioteca **vegan** e a função **colSums** pertencente a biblioteca base do R.  
+
+```{r, message= FALSE, warning= FALSE}
+
+# Riqueza
+riqueza <- specnumber(dados_aranhas)
+riqueza
+
+#Riqueza Total 
+
+riqueza_total <- specnumber(colSums(dados_aranhas))
+riqueza_total
+```  
+
+Observa-se então que, na campanha 1 foram encontradas 15 espécies dentre as 20 espécies da riqueza total, enquanto que na campanha 2 foram encontradas 14 espécies dentre as 20 espécies da campanha total.  
+
+## Índice de Shannon-Wiener 
+
+O índice de Shannon-Wiener pode ser calculado no R de diferentes maneiras, mas iremos calcula-lo através da função **diversity()**, também do pacote **vegan()**. É interessante que seja calculado não apenas o índice individual de cada campanha, mas também o índice total.  
+
+```{r, message=TRUE, warning=FALSE}
+shannon <- diversity(dados_aranhas, 
+                     index = "shannon")  
+shannon
+
+```  
+
+Geralmente, o índice de Shannon varia em uma faixa entre 1,5 a 3,5, em que, valores próximos a 1,5 indicam baixa diversidade e valores próximos a 3,5 indicam alta diversidade. Em nosso resultado exemplo, obtivemos os valores de 2,973 para a primeira campanha e 2,563 para segunda campanha.  
+
+```{r, message=TRUE, warning=FALSE}  
+
+shannon_total <-  diversity(colSums(dados_aranhas), 
+                            index = "shannon")
+shannon_total
+
+```  
+
+O valor para o índice de Shannon total foi de 2,972.  
+
+## Índice de Simpson  
+
+Para calcular o índice de Simpson, também utilizaremos a função **diversity()** do pacote vegan. Normalmente, a taxa de valores desde índice varia de 0 a 1, onde quanto mais próximo de 1, menor a diversidade e maior a dominância, e, quanto mais próximo de 0, maior a diversidade e menor a dominância. Para evitar confusões, iremos expressar o índice com o valor inverso (1 - D), para que os maiores valores representem maior diversidade, adequando a nomenclatura para Gini-Simpson.  
+
+```{r, message=FALSE, warning= FALSE}
+
+simpson <- 1 - diversity(dados_aranhas, 
+                         index = "simpson")
+simpson
+
+```  
+
+Obtivemos os resultados de 0,052 para a primeira campanha e 0,082 para a segunda campanha.  
+
+```{r, message= FALSE, warning= FALSE}
+
+simpson_total <- 1 - diversity(colSums(dados_aranhas), 
+                              index = "simpson")
+
+simpson_total
+
+```  
+
+O resultado para o índice de Gini-Simpson total foi de 0,052  
+
+## Índice de Equitabilidade Pielou 
+
+Os valores do índice de Pielou (J) , geralmente variam de 0 a 1, onde quanto mais próximo de 1 maior é a equitatividade e quanto mais próximo de 0, indica uma maior desigualdade dentro da comunidade, apresentando uma ou algumas espécies dominantes.  
+
+O índice de Pielou pode ser calculada utilizando a função de **log()** e **specnumber()** pertencente ao pacote vegan.  
+
+```{r, message=FALSE, warning=FALSE}  
+
+pielou <- shannon / log(specnumber(dados_aranhas))
+pielou
+
+```  
+
+Obtivemos os resultados de 0,992 para primeira campanha e 0,971 para segunda campanha.  
+
+```{r, message=FALSE, warning=FALSE}
+pielou_total <- shannon_total / log(riqueza_total)
+pielou_total
+
+```  
+
+Para o resultado de Pielou total, obtivemos o valor de 0,992.  
+
+# Curva de Rarefação  
+
+## Preparando a tabela  
+
+Para construir o gráfico da curva de rarefação, iremos adaptar a nossa tabela para que as linhas e colunas sejam demonstradas corretamente no gráfico.
+Aqui, utilizaremos três colunas: especies, campanha_1, campanha_2. A coluna especies será referente as sp (sp1, sp2, sp3…), a segunda e terceira coluna será referente ao número de indivíduos coletados em cada campanha.  
+
+```{r message = FALSE, warning = FALSE}
+dados_rarefacao <- read.csv("dados_aranhas_rarefacao.csv", 
+                            sep = ";", 
+                            header = TRUE)
+```  
+
+```{r mssage= FALSE, warning= FALSE}
+
+head(dados_rarefacao, 10)
+
+```  
+
+Primeiro, iremos selecionar as colunas que irão compor o gráfico:  
+
+```{r, message=FALSE, warning=FALSE}
+
+colunas_selecionadas <- dados_rarefacao[, 2:3]
+```  
+
+Em seguida, iremos utilizar a função **iNEXT** da biblioteca iNEXT para criar nosso gráfico.  
+
+```{r, message=FALSE, warning=FALSE}
+
+out <- iNEXT(colunas_selecionadas, q=0,
+             datatype = "abundance",
+             size = seq(0, 200,
+                        length.out = 20))
+
+```  
+
+Neste script utilizamos a biblioteca iNEXT e algumas de suas funções. Vamos entender o que foi feito:  
+
+* Utilizamos o parâmetro ``q=0`` para especificar a ordem de diversidade que queremos, que nesse caso, é a riqueza de espécies. Caso quiséssemos utilizar o valor de Shannon, adaptaríamos para ``q=1`` e ``q=2`` para Simpson.  
+
+* Em ``datatype = "abundance"`` especificamos o tipo de dados que será utilizado, que neste caso, foram os dados de abundância. Caso quiséssemos por exemplo, utilizar dados de incidência (presença ou ausência), poderíamos adequar o parâmetro para datatype = "incidence".  
+
+*	O parâmetro ``size = seq(0, 200, length.out = 20)`` é utilizado para definir o tamanho que a amostra deverá ser estimada, enquanto que a função seq() é utilizada para gerar uma sequência de números, e, o parâmetro ``length.out = 20`` é utilizado para especificar que a sequência criada, deve ter 20 pontos igualmente espaçados.  
+
+Por fim, para criar nosso gráfico de rarefação, iremos utilizar a biblioteca **ggiNext** e **ggplot2**.  
+
+```{r, message=FALSE, warning=FALSE}
+gg_rarefacao <- ggiNEXT(out, type = 1) +
+  theme_bw() +
+  scale_linetype_discrete(labels = c("Interpolado", "Extrapolado")) +
+  labs(x = "Número de indivíduos", y = "Riqueza de espécies") +
+  theme(legend.title=element_blank()) +
+  theme(
+    axis.text.x = element_text(size = 12), 
+    axis.text.y = element_text(size = 12),  
+    axis.title.x = element_text(size = 12),  
+    axis.title.y = element_text(size = 12),  
+    legend.title = element_text(size = 12),  
+    legend.text = element_text(size = 8),
+    legend.position = "bottom"
+  ) 
+
+gg_rarefacao
+
+```  
+
+### Explicando a construção do gráfico  
+
+O gráfico de rarefação criado foi construído utilizando as seguintes funções e parâmetros:  
+
+* O parâmetro ``out`` retorna o resultado feito pela análise de diversidade através do **iNEXT**.  
+
+* Em ``type = 1`` nos demonstramos que o gráfico construirá a curva de rarefação com base no número de indivíduos.  
+
+* A função ``theme_bw()`` pertence ao pacote **ggplot2** e permite aplicar um tema pré definido ao layout do gráfico.  
+
+* A função ``scale_linetype_discrete`` do **ggplot2** permite personalizar as linhas do gráfico. Enquanto que, o parâmetro ``labels = `` permite definir o nome para os rótulos da legenda.  
+
+* A função ``labs()`` nos permite modificar ou adicionar nomes aos rótulos dos eixos do gráfico.  
+
+* A função ``theme()`` é utilizada para personalizar alguns aspectos visuais do gráfico, como cores, tamanho de legendas, títulos, etc.  
+
+* Os parâmetros ``axis.text``, ``axis.title`` e ``legend.title`` podem ser utilizados para alterar o tamanho dos textos presente no gráfico.  
+
+* O parâmetro ``legend.position = `` é utilizado para definir a posição da legenda no gráfico.  
+
+
+
+
+
+
+
+</div>
