@@ -77,7 +77,7 @@ Observa-se então que, na campanha 1 foram encontradas 15 espécies dentre as 20
 
 ## Índice de Shannon-Wiener 
 
-O índice de Shannon-Wiener pode ser calculado no R de diferentes maneiras, mas iremos calcula-lo através da função **diversity()**, também do pacote **vegan()**. É interessante que seja calculado não apenas o índice individual de cada campanha, mas também o índice total.  
+O índice de Shannon-Wiener pode ser calculado no R de diferentes maneiras, mas iremos calcula-lo através da função ``diversity()``, também do pacote **vegan**. É interessante que seja calculado não apenas o índice individual de cada campanha, mas também o índice total.  
 
 ```{r, message=TRUE, warning=FALSE}
 shannon <- diversity(dados_aranhas, 
@@ -100,7 +100,7 @@ O valor para o índice de Shannon total foi de 2,972.
 
 ## Índice de Simpson  
 
-Para calcular o índice de Simpson, também utilizaremos a função **diversity()** do pacote vegan. Normalmente, a taxa de valores desde índice varia de 0 a 1, onde quanto mais próximo de 1, menor a diversidade e maior a dominância, e, quanto mais próximo de 0, maior a diversidade e menor a dominância. Para evitar confusões, iremos expressar o índice com o valor inverso (1 - D), para que os maiores valores representem maior diversidade, adequando a nomenclatura para Gini-Simpson.  
+Para calcular o índice de Simpson, também utilizaremos a função ``diversity()`` do pacote vegan. Normalmente, a taxa de valores desde índice varia de 0 a 1, onde quanto mais próximo de 1, menor a diversidade e maior a dominância, e, quanto mais próximo de 0, maior a diversidade e menor a dominância. Para evitar confusões, iremos expressar o índice com o valor inverso (1 - D), para que os maiores valores representem maior diversidade, adequando a nomenclatura para Gini-Simpson.  
 
 ```{r, message=FALSE, warning= FALSE}
 
@@ -127,7 +127,7 @@ O resultado para o índice de Gini-Simpson total foi de 0,052
 
 Os valores do índice de Pielou (J) , geralmente variam de 0 a 1, onde quanto mais próximo de 1 maior é a equitatividade e quanto mais próximo de 0, indica uma maior desigualdade dentro da comunidade, apresentando uma ou algumas espécies dominantes.  
 
-O índice de Pielou pode ser calculada utilizando a função de **log()** e **specnumber()** pertencente ao pacote vegan.  
+O índice de Pielou pode ser calculada utilizando a função de ``log()`` e ``specnumber()`` pertencente ao pacote vegan.  
 
 ```{r, message=FALSE, warning=FALSE}  
 
